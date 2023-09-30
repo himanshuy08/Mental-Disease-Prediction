@@ -1,7 +1,8 @@
+from flask import Flask, render_template, request
 import joblib
 import numpy as np
-from flask import Flask, render_template, request
 
+# Load the pre-trained machine learning model
 loaded_model = joblib.load("Model/saved_model")
 
 app = Flask(__name__)
@@ -22,17 +23,27 @@ def getdata():
         feature.append(int(x))
     arr = [np.array(feature, dtype=np.float32)]
     res = int(loaded_model.predict(arr))
-    if res == 0:
-        str = "You are suffering from anxiety\nYou need to seek psychological support"
-    elif res == 1:
-        str = "You are suffering from depression\nYou need to seek psychological support"
-    elif res == 2:
-        str = "You are suffering from loneliness\nSpeak to a counselor or spend some time with your loved ones"
-    elif res == 3:  # Fixed the condition number
-        str = "You are normal"
-    elif res == 4:  # Fixed the condition number
-        str = "You are stressed\nPractice yoga or talk to a counselor"
-    return render_template('predict.html', label=str)
+
+    condition_templates = {
+        0: 'anxiety.html',
+        1: 'depression.html',
+        2: 'loneliness.html',
+        3: 'normal.html',
+        4: 'stress.html',
+    }
+
+    condition_names = {
+        0: 'Anxiety',
+        1: 'Depression',
+        2: 'Loneliness',
+        3: 'Normal',
+        4: 'Stress',
+    }
+
+    if res in condition_templates:
+        condition_template = condition_templates[res]
+        condition_name = condition_names[res]
+        return render_template(condition_template, condition=condition_name)
 
 if __name__ == "__main__":
     app.run()
